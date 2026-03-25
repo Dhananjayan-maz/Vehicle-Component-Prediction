@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vehicle AI</title>
+</head>
+<body>
+
+<h2>🚗 Smart Vehicle Detection</h2>
+
+<form action="/predict/" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <input type="file" name="image" required><br><br>
+
+    <label>Select Mode:</label><br>
+    <input type="radio" name="mode" value="industry" required> Industry Mode<br>
+    <input type="radio" name="mode" value="training"> Training Mode<br><br>
+
+    <button type="submit">Predict</button>
+</form>
+
+</body>
+</html>

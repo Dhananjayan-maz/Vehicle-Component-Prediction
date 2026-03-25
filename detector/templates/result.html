@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Result</title>
+</head>
+<body>
+
+<h2>🔍 Detection Result</h2>
+
+<img src="{{ image_url }}" width="400"><br><br>
+
+<h3>Detected Components:</h3>
+<ul>
+    {% for d in detected %}
+        <li>{{ d }}</li>
+    {% endfor %}
+</ul>
+
+{% if mode == "industry" %}
+    <h3>Missing Components:</h3>
+    {% if missing %}
+        <ul>
+        {% for m in missing %}
+            <li>{{ m }}</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>✅ All required parts present</p>
+    {% endif %}
+{% endif %}
+
+{% if mode == "training" %}
+    <h3>Component Information:</h3>
+    <ul>
+        {% for key, value in info.items %}
+            <li><b>{{ key }}</b>: {{ value }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<br>
+<a href="/">⬅ Back</a>
+
+</body>
+</html>
+
+<h3>Detected Components:</h3>
+
+<table border="1">
+    <tr>
+        <th>Class</th>
+        <th>Confidence</th>
+        <th>X</th>
+        <th>Y</th>
+        <th>Width</th>
+        <th>Height</th>
+    </tr>
+
+    {% for d in detections %}
+    <tr>
+        <td>{{ d.class }}</td>
+        <td>{{ d.confidence }}</td>
+        <td>{{ d.x }}</td>
+        <td>{{ d.y }}</td>
+        <td>{{ d.width }}</td>
+        <td>{{ d.height }}</td>
+    </tr>
+    {% endfor %}
+</table>
