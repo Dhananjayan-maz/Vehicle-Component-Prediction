@@ -1,23 +1,699 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Vehicle AI</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Nexus AI | Vehicle Detection Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(circle at 20% 30%, #0a0f2a, #030617);
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        /* animated particles / grid backdrop */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* floating orbs animation */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            z-index: 0;
+            animation: floatOrb 18s infinite alternate ease-in-out;
+        }
+
+        .orb-1 {
+            width: 40vw;
+            height: 40vw;
+            background: #2a6df4;
+            top: -10%;
+            left: -10%;
+        }
+        .orb-2 {
+            width: 35vw;
+            height: 35vw;
+            background: #9b4dff;
+            bottom: -15%;
+            right: -5%;
+            animation-duration: 22s;
+        }
+        .orb-3 {
+            width: 25vw;
+            height: 25vw;
+            background: #00e0ff;
+            top: 50%;
+            left: 70%;
+            animation-duration: 15s;
+        }
+
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(5%, 8%) scale(1.1); }
+        }
+
+        /* main glass panel */
+        .ai-dashboard {
+            position: relative;
+            z-index: 10;
+            max-width: 1300px;
+            width: 100%;
+            backdrop-filter: blur(16px);
+            background: rgba(12, 20, 35, 0.55);
+            border-radius: 2rem;
+            border: 1px solid rgba(0, 255, 255, 0.25);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 255, 255, 0.1) inset;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        /* rows layout */
+        .dashboard-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding: 1.8rem;
+        }
+
+        /* info row (about + instructions) */
+        .info-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        /* top row: upload + camera */
+        .top-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        /* bottom row: preview */
+        .bottom-row {
+            width: 100%;
+        }
+
+        @media (max-width: 900px) {
+            body { padding: 1rem; }
+            .dashboard-rows { padding: 1rem; gap: 1rem; }
+            .info-row, .top-row { grid-template-columns: 1fr; gap: 1rem; }
+        }
+
+        /* cards style - slightly increased from compact */
+        .glass-card {
+            background: rgba(20, 30, 55, 0.5);
+            backdrop-filter: blur(12px);
+            border-radius: 1.5rem;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            padding: 1.2rem;
+            transition: transform 0.25s ease, box-shadow 0.3s;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            height: 100%;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(0, 230, 250, 0.7);
+            box-shadow: 0 12px 28px rgba(0, 200, 255, 0.2);
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #fff, #7bc5ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            letter-spacing: -0.2px;
+        }
+
+        .badge-ai {
+            background: rgba(0, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
+            border-radius: 40px;
+            padding: 0.2rem 0.8rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: cyan;
+            border: 0.5px solid cyan;
+            width: fit-content;
+        }
+
+        /* info card text styling */
+        .info-text {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #d0e4ff;
+        }
+        .info-text ul {
+            margin-top: 0.5rem;
+            padding-left: 1.2rem;
+        }
+        .info-text li {
+            margin: 0.3rem 0;
+        }
+
+        /* drag-drop zone */
+        .drag-zone {
+            border: 2px dashed rgba(0, 230, 250, 0.5);
+            border-radius: 1.2rem;
+            padding: 1.2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(0, 0, 0, 0.25);
+            margin-bottom: 1rem;
+        }
+
+        .drag-zone:hover, .drag-zone.drag-over {
+            border-color: #0ef;
+            background: rgba(0, 255, 255, 0.08);
+            transform: scale(0.98);
+        }
+
+        .drag-icon {
+            font-size: 2.2rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .file-name {
+            font-size: 0.75rem;
+            color: #aaf0ff;
+            margin-top: 6px;
+            word-break: break-all;
+        }
+
+        /* camera section */
+        .camera-preview-box {
+            background: #00000030;
+            border-radius: 1rem;
+            overflow: hidden;
+            margin: 0.8rem 0;
+            aspect-ratio: 16 / 9;
+            max-height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border: 1px solid cyan;
+        }
+
+        video, #cameraFeed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-top: 0.8rem;
+            justify-content: center;
+        }
+
+        /* buttons */
+        .btn {
+            padding: 0.5rem 1.2rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.8rem;
+            border: none;
+            background: rgba(20, 30, 60, 0.8);
+            backdrop-filter: blur(5px);
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid rgba(0, 255, 255, 0.4);
+        }
+
+        .btn-primary {
+            background: linear-gradient(95deg, #0066ff, #00ccff);
+            box-shadow: 0 0 6px rgba(0, 200, 255, 0.4);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 12px #00aaff;
+        }
+
+        .btn-secondary {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #0ef;
+        }
+
+        .btn-secondary:hover {
+            background: #0ef22a20;
+            border-color: cyan;
+        }
+
+        .btn-danger {
+            background: rgba(220, 40, 80, 0.7);
+        }
+
+        .btn-danger:hover {
+            background: #ff3366;
+        }
+
+        /* preview panel */
+        .image-preview-container {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 1.2rem;
+            padding: 1rem;
+            text-align: center;
+            min-height: 210px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+
+        #selectedPreviewImg {
+            max-width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            transition: 0.3s;
+            background: #010a1a;
+        }
+
+        .placeholder-preview {
+            color: #7e9eff;
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detect-btn-wrapper {
+            margin-top: 1rem;
+        }
+
+        .btn-detect {
+            width: 100%;
+            padding: 0.8rem;
+            font-size: 1rem;
+            background: linear-gradient(95deg, #ff416c, #ff4b2b);
+            border: none;
+            box-shadow: 0 0 10px #ff416c60;
+            letter-spacing: 0.5px;
+        }
+
+        .loader {
+            display: none;
+            margin-top: 0.8rem;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 0.6rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            font-size: 0.8rem;
+            animation: pulseGlow 1s infinite;
+            text-align: center;
+        }
+
+        @keyframes pulseGlow {
+            0% { text-shadow: 0 0 0px cyan; opacity: 0.7; }
+            100% { text-shadow: 0 0 8px cyan; opacity: 1; }
+        }
+
+        .footer-note {
+            text-align: center;
+            padding: 1rem 1.5rem 1.2rem;
+            font-size: 0.7rem;
+            color: #9bbdff;
+            border-top: 1px solid rgba(0,255,255,0.2);
+            background: rgba(0,0,0,0.2);
+        }
+
+        .hidden-input {
+            display: none;
+        }
+
+        .status-chip {
+            background: #0a1930;
+            border-radius: 20px;
+            padding: 2px 10px;
+            font-size: 0.7rem;
+            color: #0ef;
+        }
+
+        .capabilities-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+    </style>
 </head>
 <body>
 
-<h2>🚗 Smart Vehicle Detection</h2>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
 
-<form action="/predict/" method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    
-    <input type="file" name="image" required><br><br>
+<div class="ai-dashboard">
+    <div class="dashboard-rows">
+        <!-- INFO ROW: About Model + Instructions -->
+        <div class="info-row">
+            <div class="glass-card">
+                <div class="card-title">
+                    🧠 AI MODEL
+                    <span class="badge-ai">YOLOv8</span>
+                </div>
+                <div class="info-text">
+                    <strong>Advanced vehicle component detection</strong><br>
+                    Uses YOLOv8 deep learning to identify cars, trucks, bicycles, license plates, and more. Designed for inspection, maintenance, and technical training with high accuracy.
+                </div>
+            </div>
+            <div class="glass-card">
+                <div class="card-title">
+                    📌 QUICK GUIDE
+                    <span class="badge-ai">simple steps</span>
+                </div>
+                <div class="info-text">
+                    <ul>
+                        <li>📸 Upload image or use live camera</li>
+                        <li>🎯 Ensure vehicle parts are clearly visible</li>
+                        <li>🚀 Click "Run AI Detection"</li>
+                        <li>✅ View results with confidence scores</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
 
-    <label>Select Mode:</label><br>
-    <input type="radio" name="mode" value="industry" required> Industry Mode<br>
-    <input type="radio" name="mode" value="training"> Training Mode<br><br>
+        <!-- TOP ROW: Upload + Camera -->
+        <div class="top-row">
+            <!-- Upload Card -->
+            <div class="glass-card">
+                <div class="card-title">
+                    📂 UPLOAD IMAGE
+                    <span class="badge-ai">drag & drop</span>
+                </div>
+                <div class="drag-zone" id="dragZone">
+                    <div class="drag-icon">🖼️✨</div>
+                    <div style="font-size:0.85rem;">Click or drag image</div>
+                    <div class="status-chip" style="margin-top: 5px;">JPG, PNG, WEBP</div>
+                    <div class="file-name" id="fileNameDisplay">No file selected</div>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" id="clearUploadBtn">🗑️ Clear</button>
+                </div>
+            </div>
 
-    <button type="submit">Predict</button>
-</form>
+            <!-- Camera Card -->
+            <div class="glass-card">
+                <div class="card-title">
+                    📷 LIVE CAMERA
+                    <span class="badge-ai">AI ready</span>
+                </div>
+                <div class="camera-preview-box" id="cameraBox">
+                    <video id="video" autoplay playsinline style="display: none; width:100%; height:100%; object-fit:cover;"></video>
+                    <canvas id="canvas" style="display: none;"></canvas>
+                    <div id="cameraPlaceholder" style="color: #9bbdff; text-align: center; padding: 12px; font-size:0.85rem;">
+                        🎥 Camera inactive <br> Press "Start"
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary" id="startCamBtn">▶ Start</button>
+                    <button type="button" class="btn btn-secondary" id="captureBtn">📸 Capture</button>
+                    <button type="button" class="btn btn-danger" id="stopCamBtn">⏹️ Stop</button>
+                </div>
+                <div class="status-chip" style="margin-top: 8px; text-align:center;">Capture replaces upload</div>
+            </div>
+        </div>
 
+        <!-- BOTTOM ROW: Active Preview + Detection -->
+        <div class="bottom-row">
+            <div class="glass-card" style="height: auto;">
+                <div class="card-title">
+                    🔍 ACTIVE PREVIEW
+                    <span class="badge-ai">detection source</span>
+                </div>
+                <div class="image-preview-container" id="previewContainer">
+                    <div id="previewPlaceholder" class="placeholder-preview">
+                        <span>✨ No image selected</span>
+                        <span style="font-size:12px;">Upload or capture to start AI analysis</span>
+                    </div>
+                    <img id="selectedPreviewImg" style="display: none;" alt="Preview">
+                </div>
+
+                <!-- Detection Form -->
+                <div class="detect-btn-wrapper">
+                    <form action="/predict/" method="post" enctype="multipart/form-data" id="aiForm">
+                        {% csrf_token %}
+                        <input type="file" name="image" id="fileInput" class="hidden-input" accept="image/*">
+                        <input type="hidden" name="camera_image" id="cameraImageInput" value="">
+                        
+                        <button type="submit" class="btn btn-primary btn-detect" id="submitDetectionBtn">
+                            🚀 RUN AI DETECTION
+                        </button>
+                        <div class="loader" id="loader">
+                            🤖 Neural engine analyzing · YOLOv8
+                        </div>
+                    </form>
+                </div>
+                <div style="margin-top: 10px; font-size: 10px; text-align: center; color: #aaf0dd;">
+                    ⚡ YOLOv8 + Roboflow | Vehicle component detection
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="footer-note">
+        ⚡ Neural AI · Computer Vision · Edge-enhanced inference
+    </div>
+</div>
+
+<script>
+    // DOM elements
+    const fileInput = document.getElementById('fileInput');
+    const dragZone = document.getElementById('dragZone');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const clearUploadBtn = document.getElementById('clearUploadBtn');
+    const selectedPreviewImg = document.getElementById('selectedPreviewImg');
+    const previewPlaceholder = document.getElementById('previewPlaceholder');
+    const cameraImageInput = document.getElementById('cameraImageInput');
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const startCamBtn = document.getElementById('startCamBtn');
+    const captureBtn = document.getElementById('captureBtn');
+    const stopCamBtn = document.getElementById('stopCamBtn');
+    const cameraPlaceholder = document.getElementById('cameraPlaceholder');
+    const loader = document.getElementById('loader');
+    const aiForm = document.getElementById('aiForm');
+
+    let mediaStream = null;
+    let currentImageSource = null;
+
+    function updatePreview(imageUrl, isUpload = true) {
+        selectedPreviewImg.src = imageUrl;
+        selectedPreviewImg.style.display = 'block';
+        previewPlaceholder.style.display = 'none';
+        currentImageSource = isUpload ? 'upload' : 'camera';
+    }
+
+    function resetPreviewToPlaceholder() {
+        selectedPreviewImg.style.display = 'none';
+        previewPlaceholder.style.display = 'flex';
+        selectedPreviewImg.src = '';
+        currentImageSource = null;
+    }
+
+    function stopCameraStream() {
+        if (mediaStream) {
+            mediaStream.getTracks().forEach(track => track.stop());
+            mediaStream = null;
+        }
+        video.style.display = 'none';
+        if (cameraPlaceholder) cameraPlaceholder.style.display = 'flex';
+        video.srcObject = null;
+    }
+
+    function startCamera() {
+        stopCameraStream();
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false })
+            .then(stream => {
+                mediaStream = stream;
+                video.srcObject = stream;
+                video.style.display = 'block';
+                if (cameraPlaceholder) cameraPlaceholder.style.display = 'none';
+                video.play().catch(e => console.log);
+            })
+            .catch(err => {
+                alert("Camera access denied: " + err.message);
+                if (cameraPlaceholder) cameraPlaceholder.style.display = 'flex';
+            });
+    }
+
+    function captureFromCamera() {
+        if (!mediaStream || video.style.display === 'none' || !video.videoWidth) {
+            alert("Start camera first.");
+            return;
+        }
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const capturedDataUrl = canvas.toDataURL('image/png');
+        
+        cameraImageInput.value = capturedDataUrl;
+        updatePreview(capturedDataUrl, false);
+        
+        fileInput.value = '';
+        fileNameDisplay.innerText = 'Camera capture active';
+        currentImageSource = 'camera';
+        
+        stopCameraStream();
+        if (cameraPlaceholder) cameraPlaceholder.style.display = 'flex';
+        video.style.display = 'none';
+    }
+
+    function handleFileUpload(file) {
+        if (!file) return;
+        const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+        if (!validTypes.includes(file.type)) {
+            alert('Please select a valid image (JPEG, PNG, WEBP)');
+            return false;
+        }
+        cameraImageInput.value = '';
+        if (mediaStream) stopCameraStream();
+        if (cameraPlaceholder) cameraPlaceholder.style.display = 'flex';
+        video.style.display = 'none';
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            updatePreview(e.target.result, true);
+        };
+        reader.readAsDataURL(file);
+        fileNameDisplay.innerText = file.name.length > 28 ? file.name.substring(0,25)+'...' : file.name;
+        return true;
+    }
+
+    fileInput.addEventListener('change', (e) => {
+        if (fileInput.files && fileInput.files.length > 0) {
+            handleFileUpload(fileInput.files[0]);
+        } else {
+            resetPreviewToPlaceholder();
+            fileNameDisplay.innerText = 'No file selected';
+        }
+    });
+
+    // Drag & drop
+    dragZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dragZone.classList.add('drag-over');
+    });
+    dragZone.addEventListener('dragleave', () => dragZone.classList.remove('drag-over'));
+    dragZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dragZone.classList.remove('drag-over');
+        const files = e.dataTransfer.files;
+        if (files.length) {
+            fileInput.files = files;
+            fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    });
+    dragZone.addEventListener('click', () => fileInput.click());
+
+    clearUploadBtn.addEventListener('click', () => {
+        fileInput.value = '';
+        fileNameDisplay.innerText = 'No file selected';
+        resetPreviewToPlaceholder();
+        cameraImageInput.value = '';
+    });
+
+    startCamBtn.addEventListener('click', startCamera);
+    captureBtn.addEventListener('click', () => {
+        if (!mediaStream || video.style.display === 'none') {
+            alert("Camera not active. Click 'Start' first.");
+            return;
+        }
+        if (fileInput.files.length) {
+            fileInput.value = '';
+            fileNameDisplay.innerText = 'Camera capture used';
+        }
+        captureFromCamera();
+    });
+    stopCamBtn.addEventListener('click', () => {
+        stopCameraStream();
+        if (cameraPlaceholder) cameraPlaceholder.style.display = 'flex';
+        video.style.display = 'none';
+    });
+
+    function validateAndShowLoader() {
+        const hasFile = fileInput.files && fileInput.files.length > 0;
+        const hasCameraData = cameraImageInput.value && cameraImageInput.value.trim() !== "";
+        if (!hasFile && !hasCameraData) {
+            alert("⚠️ No image selected! Upload or capture.");
+            return false;
+        }
+        loader.style.display = "block";
+        return true;
+    }
+
+    let submitting = false;
+    aiForm.addEventListener('submit', (e) => {
+        if (submitting) {
+            e.preventDefault();
+            return false;
+        }
+        if (!validateAndShowLoader()) {
+            e.preventDefault();
+            return false;
+        }
+        submitting = true;
+        setTimeout(() => { submitting = false; }, 3000);
+        return true;
+    });
+
+    window.addEventListener('beforeunload', () => {
+        if (mediaStream) mediaStream.getTracks().forEach(track => track.stop());
+    });
+
+    window.onload = () => {
+        loader.style.display = "none";
+        resetPreviewToPlaceholder();
+        if (mediaStream) stopCameraStream();
+        cameraImageInput.value = '';
+    };
+</script>
 </body>
 </html>

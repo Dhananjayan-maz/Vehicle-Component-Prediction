@@ -1,0 +1,15 @@
+🏭 1. AUTOMOBILE MANUFACTURING (QUALITY CHECK)
+💡 Use Case:
+Detect individual components during assembly
+Example:
+Conveyor belt → one part at a time
+Camera checks:
+“Is this a brake pad?”
+“Is this a radiator?”
+
+👉 Why it fits:
+
+Controlled setup
+One object per frame
+
+problem statement: AI-Based Vehicle Component Detection for Automated Industrial Inspection

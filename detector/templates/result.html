@@ -1,69 +1,408 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Result</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus AI | Detection Results</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(circle at 20% 30%, #0a0f2a, #030617);
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* animated particles / grid backdrop */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* floating orbs */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            z-index: 0;
+            animation: floatOrb 18s infinite alternate ease-in-out;
+        }
+
+        .orb-1 {
+            width: 40vw;
+            height: 40vw;
+            background: #2a6df4;
+            top: -10%;
+            left: -10%;
+        }
+        .orb-2 {
+            width: 35vw;
+            height: 35vw;
+            background: #9b4dff;
+            bottom: -15%;
+            right: -5%;
+            animation-duration: 22s;
+        }
+        .orb-3 {
+            width: 25vw;
+            height: 25vw;
+            background: #00e0ff;
+            top: 50%;
+            left: 70%;
+            animation-duration: 15s;
+        }
+
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(5%, 8%) scale(1.1); }
+        }
+
+        /* main container */
+        .result-dashboard {
+            position: relative;
+            z-index: 10;
+            max-width: 1300px;
+            width: 100%;
+            backdrop-filter: blur(16px);
+            background: rgba(12, 20, 35, 0.55);
+            border-radius: 2rem;
+            border: 1px solid rgba(0, 255, 255, 0.25);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 255, 255, 0.1) inset;
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #fff, #7bc5ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-align: center;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 800px) {
+            .result-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+        }
+
+        /* glass card style */
+        .glass-card {
+            background: rgba(20, 30, 55, 0.5);
+            backdrop-filter: blur(12px);
+            border-radius: 1.5rem;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            padding: 1.5rem;
+            transition: transform 0.25s ease, box-shadow 0.3s;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 230, 250, 0.7);
+            box-shadow: 0 15px 35px rgba(0, 200, 255, 0.2);
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #e0f0ff;
+        }
+
+        .card-title i {
+            font-size: 1.6rem;
+        }
+
+        /* image container */
+        .image-container {
+            text-align: center;
+        }
+
+        .result-image {
+            max-width: 100%;
+            max-height: 350px;
+            border-radius: 1rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            border: 1px solid rgba(0,255,255,0.3);
+            transition: transform 0.3s;
+        }
+
+        .result-image:hover {
+            transform: scale(1.02);
+        }
+
+        /* table styling */
+        .detection-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: #f0f0f0;
+        }
+
+        .detection-table th,
+        .detection-table td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .detection-table th {
+            background: rgba(0, 0, 0, 0.4);
+            font-weight: 600;
+            color: cyan;
+            font-size: 0.9rem;
+        }
+
+        .detection-table tr:hover {
+            background: rgba(0, 255, 255, 0.08);
+        }
+
+        /* category badge */
+        .category-badge {
+            background: linear-gradient(95deg, #0066ff, #00ccff);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+            color: white;
+        }
+
+        /* confidence bar */
+        .confidence-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .confidence-bar {
+            width: 80px;
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff95, #00c6ff);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        .confidence-value {
+            font-size: 0.8rem;
+            font-weight: 600;
+            min-width: 45px;
+        }
+
+        /* no results */
+        .no-results {
+            text-align: center;
+            padding: 2rem;
+            color: #ffaa99;
+            font-size: 1.1rem;
+        }
+
+        /* back button */
+        .back-button {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        .btn-back {
+            padding: 0.8rem 2rem;
+            background: linear-gradient(95deg, #ff416c, #ff4b2b);
+            border: none;
+            border-radius: 2rem;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px #ff416c60;
+        }
+
+        .btn-back:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #ff4b2b;
+        }
+
+        /* footer */
+        .footer {
+            text-align: center;
+            padding: 1.2rem;
+            font-size: 0.7rem;
+            color: #9bbdff;
+            border-top: 1px solid rgba(0,255,255,0.2);
+            background: rgba(0,0,0,0.2);
+        }
+
+        /* summary card */
+        .summary-stats {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+        .stat-chip {
+            background: rgba(0, 255, 255, 0.15);
+            border-radius: 2rem;
+            padding: 0.3rem 1rem;
+            font-size: 0.8rem;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(0,255,255,0.3);
+        }
+    </style>
 </head>
 <body>
 
-<h2>🔍 Detection Result</h2>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
 
-<img src="{{ image_url }}" width="400"><br><br>
+<div class="result-dashboard">
+    <div class="content">
+        <h2>
+            🤖 AI DETECTION RESULTS
+            <span style="font-size: 0.8rem; background: rgba(0,255,255,0.2); padding: 0.2rem 0.8rem; border-radius: 2rem;">YOLOv8</span>
+        </h2>
 
-<h3>Detected Components:</h3>
-<ul>
-    {% for d in detected %}
-        <li>{{ d }}</li>
-    {% endfor %}
-</ul>
+        <div class="result-grid">
+            <!-- Left: Image Card -->
+            <div class="glass-card image-container">
+                <div class="card-title">
+                    <span>📸</span> ANALYZED IMAGE
+                </div>
+                <img src="{{ image_url }}" alt="Uploaded Image" class="result-image">
+                <div class="summary-stats">
+                    <div class="stat-chip">🔍 {{ detections|length }} objects detected</div>
+                    <div class="stat-chip">⚡ Real-time inference</div>
+                </div>
+            </div>
 
-{% if mode == "industry" %}
-    <h3>Missing Components:</h3>
-    {% if missing %}
-        <ul>
-        {% for m in missing %}
-            <li>{{ m }}</li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>✅ All required parts present</p>
-    {% endif %}
-{% endif %}
+            <!-- Right: Detection Results Card -->
+            <div class="glass-card">
+                <div class="card-title">
+                    <span>📊</span> DETECTED COMPONENTS
+                </div>
 
-{% if mode == "training" %}
-    <h3>Component Information:</h3>
-    <ul>
-        {% for key, value in info.items %}
-            <li><b>{{ key }}</b>: {{ value }}</li>
-        {% endfor %}
-    </ul>
-{% endif %}
+                {% if detections %}
+                <table class="detection-table">
+                    <thead>
+                        <tr>
+                            <th>Component</th>
+                            <th>Category</th>
+                            <th>Confidence</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in detections %}
+                        <tr>
+                            <td><strong>{{ d.class }}</strong></td>
+                            <td><span class="category-badge">{{ d.category }}</span></td>
+                            <td>
+                                <div class="confidence-container">
+                                    <div class="confidence-bar">
+                                        <div class="confidence-fill" style="width: {{ d.confidence_percent }}%;"></div>
+                                    </div>
+                                    <span class="confidence-value">{{ d.confidence }}</span>
+                                </div>
+                            </td>
+                            <td>{{ d.description }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="no-results">
+                    <span>❌ No components detected</span><br>
+                    <span style="font-size: 0.8rem;">Try a clearer image with visible vehicle parts.</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
 
-<br>
-<a href="/">⬅ Back</a>
+        <!-- Back Button -->
+        <div class="back-button">
+            <a href="/" class="btn-back">
+                ⬅ BACK TO HOME
+            </a>
+        </div>
+    </div>
+    <div class="footer">
+        ⚡ YOLOv8 + Roboflow | Neural AI Vehicle Component Detection
+    </div>
+</div>
 
+<script>
+    // Optional: add subtle animation to confidence bars if needed
+    document.addEventListener('DOMContentLoaded', () => {
+        const fills = document.querySelectorAll('.confidence-fill');
+        fills.forEach(fill => {
+            const width = fill.style.width;
+            fill.style.width = '0%';
+            setTimeout(() => {
+                fill.style.width = width;
+            }, 100);
+        });
+    });
+</script>
 </body>
 </html>
-
-<h3>Detected Components:</h3>
-
-<table border="1">
-    <tr>
-        <th>Class</th>
-        <th>Confidence</th>
-        <th>X</th>
-        <th>Y</th>
-        <th>Width</th>
-        <th>Height</th>
-    </tr>
-
-    {% for d in detections %}
-    <tr>
-        <td>{{ d.class }}</td>
-        <td>{{ d.confidence }}</td>
-        <td>{{ d.x }}</td>
-        <td>{{ d.y }}</td>
-        <td>{{ d.width }}</td>
-        <td>{{ d.height }}</td>
-    </tr>
-    {% endfor %}
-</table>
