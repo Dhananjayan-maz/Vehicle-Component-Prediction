@@ -65,7 +65,7 @@ Confidence %
 ## Installation & Setup
 
 1️⃣ Clone Repository  
-https://github.com/Dhananjayan-maz/Vehicle-Component-Prediction.git
+https://github.com/Dhananjayan-maz/Vehicle-Component-Prediction.git  
 2️⃣ Create Virtual Environment  
 python -m venv venv  
 source venv/bin/activate   # Linux / Mac  
