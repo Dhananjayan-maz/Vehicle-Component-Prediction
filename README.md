@@ -65,8 +65,7 @@ Confidence %
 ## Installation & Setup
 
 1️⃣ Clone Repository  
-git clone https://github.com/your-username/nexus-ai-vehicle-detection.git  
-cd nexus-ai-vehicle-detection  
+https://github.com/Dhananjayan-maz/Vehicle-Component-Prediction.git
 2️⃣ Create Virtual Environment  
 python -m venv venv  
 source venv/bin/activate   # Linux / Mac  
