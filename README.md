@@ -1,80 +1,226 @@
-# Nexus AI – Vehicle Component Detection (YOLOv8 + Django)
-## Overview
+# 🚗 Nexus AI – Vehicle Component Detection System
 
-Nexus AI is a web-based intelligent vehicle component detection system built using YOLOv8 and Django.
-It allows users to upload images or capture live camera input to detect vehicle components such as ENGINE BAY, BRAKING SYSTEM, SUSPENSION SYSTEM, INTERIOR COMPONENTS and more.
+An AI-powered vehicle component detection system developed using YOLOv8 and Django that enables users to upload vehicle images or use live camera input to identify and classify vehicle components in real time.
 
+---
+
+## 📌 Project Overview
+
+Nexus AI is a computer vision-based web application designed to detect and classify vehicle components such as engine systems, braking systems, suspension systems, and interior components using deep learning object detection models.
+
+The system combines Artificial Intelligence and Web Development to provide an interactive dashboard capable of performing real-time vehicle component analysis with confidence-based predictions.
+
+---
+
+## ✨ Key Features
+
+### 🔹 AI-Powered Detection
+- Vehicle component detection using YOLOv8
+- Bounding box visualization
+- Confidence score generation
+- Component classification and labeling
+
+### 🔹 Image & Camera Support
+- Upload vehicle images for detection
+- Live camera capture functionality
+- Real-time image preview before inference
+- Drag-and-drop image upload support
+
+### 🔹 Detection Results
+- Display detected component names
+- Confidence percentage output
+- Component category visualization
+- Structured prediction results dashboard
+
+### 🔹 UI & User Experience
+- Modern Glassmorphism-based responsive UI
+- Interactive dashboard layout
+- Smooth animations and preview handling
+- Responsive design for multiple devices
+
+---
+
+## 🛠️ Technologies Used
+
+### Frontend
+- HTML5
+- CSS3
+- JavaScript
+
+### Backend
+- Django
+- Python
+
+### AI / Computer Vision
+- YOLOv8
+- Roboflow
+- OpenCV
+
+### Development Tools
+- VS Code
+- GitHub
+
+---
+
+## ⚙️ System Workflow
+
+```text
+User Uploads Image / Uses Camera
+                ↓
+      Image Preview Generation
+                ↓
+      Send Image to Backend
+                ↓
+      YOLOv8 Model Inference
+                ↓
+     Detect Vehicle Components
+                ↓
+ Generate Bounding Boxes & Scores
+                ↓
+     Display Detection Results
+```
+
+---
+
+## 🧠 Project Architecture
+
+```text
+                ┌─────────────────┐
+                │ User Interface  │
+                └────────┬────────┘
+                         │
+                         ▼
+                ┌─────────────────┐
+                │ Django Backend  │
+                └────────┬────────┘
+                         │
+                         ▼
+                ┌─────────────────┐
+                │ YOLOv8 Model    │
+                │ Inference Engine│
+                └────────┬────────┘
+                         │
+                         ▼
+                ┌─────────────────┐
+                │ Detection Output│
+                │ Bounding Boxes  │
+                └────────┬────────┘
+                         │
+                         ▼
+                ┌─────────────────┐
+                │ Result Dashboard│
+                └─────────────────┘
+```
+
+---
+
+## 📸 Project Screenshots
+
+### 🏠 Detection Dashboard
 <img width="1912" height="782" alt="ai vec 1" src="https://github.com/user-attachments/assets/d8844d80-f96c-4db2-904a-972237d3d882" />
+
+### 🤖 Vehicle Component Detection
 <img width="1918" height="903" alt="ai vec 2" src="https://github.com/user-attachments/assets/e79f72fb-3a84-49d6-89e3-aa269c85a407" />
 
-This project combines Computer Vision + Web Development to create an interactive AI-powered detection dashboard.
+---
 
-🎯 Key Features
+## 📂 Project Structure
 
-📂 Image Upload Detection
+```text
+vehicle-component-detection/
 
-📷 Live Camera Capture
+├── manage.py
+├── nexus_ai/                  # Django project settings
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+│
+├── myapp/                     # Main application
+│   ├── migrations/
+│   ├── models.py
+│   ├── views.py
+│   ├── forms.py
+│   │
+│   ├── templates/
+│   │   ├── home.html
+│   │   ├── detect.html
+│   │   └── results.html
+│   │
+│   └── static/
+│
+├── media/                     # Uploaded images
+├── yolov8_model/              # Trained model files
+├── requirements.txt
+├── .gitignore
+└── README.md
+```
 
-🤖 YOLOv8 Object Detection Model
+---
 
-📊 Detection Results with Confidence Scores
+## 🚀 Installation & Setup
 
-🎨 Modern Glassmorphism UI (Responsive Design)
+### 1️⃣ Clone Repository
 
-⚡ Real-Time Preview Before Detection
+```bash
+git clone https://github.com/Dhananjayan-maz/Vehicle-Component-Prediction.git
+cd Vehicle-Component-Prediction
+```
 
-🔄 Drag & Drop Upload Support
+### 2️⃣ Create Virtual Environment
 
-🧠 AI Model  
-Model: YOLOv8   
-Framework: Ultralytics / Roboflow  
-Task: Object Detection  
-Output:  
-* Component Name  
-* Category  
-* Confidence Score  
-* Description  
+```bash
+python -m venv venv
+```
 
-🛠️ Tech Stack  
-* Frontend  
-* HTML5  
-* CSS3 (Glassmorphism UI)  
-* JavaScript (Camera + Preview Handling)
+Activate environment:
 
-⚙️ Backend  
-* Django (Python)  
-* Django Templates  
-* REST Handling (Form Submission)  
+#### Windows
+```bash
+venv\Scripts\activate
+```
 
-🤖 AI / ML
-* YOLOv8  
-* Roboflow (for dataset / inference)  
-* OpenCV (optional if used)  
+#### Linux / macOS
+```bash
+source venv/bin/activate
+```
 
-📸 Application Workflow
-User uploads image or starts camera  
-Preview is shown in UI  
-User clicks "Run AI Detection"  
-Image is sent to Django backend  
-YOLOv8 processes the image  
-Results are displayed with:
-Bounding boxes  
-Component details 
-Confidence %  
+### 3️⃣ Install Dependencies
 
-## Installation & Setup
+```bash
+pip install -r requirements.txt
+```
 
-1️⃣ Clone Repository  
-https://github.com/Dhananjayan-maz/Vehicle-Component-Prediction.git  
-2️⃣ Create Virtual Environment  
-python -m venv venv  
-source venv/bin/activate   # Linux / Mac  
-venv\Scripts\activate      # Windows  
-3️⃣ Install Dependencies  
-pip install -r requirements.txt  
-4️⃣ Run Django Server  
-python manage.py runserver  
-5️⃣ Open in Browser  
+### 4️⃣ Run Django Server
+
+```bash
+python manage.py runserver
+```
+
+### 5️⃣ Open in Browser
+
+```text
 http://127.0.0.1:8000/
+```
 
-## Thank You...
+---
+
+## 🎯 Detection Categories
+
+The system supports detection of vehicle components such as:
+
+- Engine Bay
+- Braking System
+- Suspension System
+- Interior Components
+- Mechanical Parts
+
+---
+
+## 🔮 Future Enhancements
+
+- Real-time video stream detection
+- Multi-object tracking
+- AI-based damage detection
+- Model performance analytics
+- Cloud deployment support
+- Mobile-friendly optimization
